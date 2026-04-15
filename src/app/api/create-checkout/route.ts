@@ -19,7 +19,7 @@ export async function POST(_req: NextRequest) {
             name: "Landing Page Generator — Acceso único",
             description: "Genera landing pages profesionales con IA para cualquier tipo de negocio. Editor visual incluido. Acceso de por vida.",
           },
-          unit_amount: 1000, // €10
+          unit_amount: 2900, // €29
         },
         quantity: 1,
       },
