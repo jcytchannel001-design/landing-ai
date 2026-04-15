@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import Stripe from "stripe";
 import { randomUUID } from "crypto";
 import { saveConfig } from "@/lib/configStore";
 import type { SiteConfig } from "@/lib/siteTypes";
@@ -166,31 +165,16 @@ OUTPUT JSON SCHEMA (fill in all fields):
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { prompt, images = [], primaryColor, sessionId } = body as {
+    const { prompt, images = [], primaryColor } = body as {
       prompt: string;
       images?: string[];
       primaryColor?: string;
-      sessionId?: string;
     };
 
     if (!prompt?.trim()) {
       return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
     }
-
-    // Verify payment (skip in dev mode when STRIPE_SECRET_KEY not set)
-    if (process.env.STRIPE_SECRET_KEY && sessionId && sessionId !== "dev") {
-      try {
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-        const session = await stripe.checkout.sessions.retrieve(sessionId);
-        if (session.payment_status !== "paid") {
-          return NextResponse.json({ error: "Acceso no autorizado. Completa el pago primero." }, { status: 402 });
-        }
-      } catch {
-        return NextResponse.json({ error: "No se pudo verificar el pago." }, { status: 402 });
-      }
-    } else if (process.env.STRIPE_SECRET_KEY && !sessionId) {
-      return NextResponse.json({ error: "Acceso no autorizado." }, { status: 402 });
-    }
+    // Generation is free — payment gates the editor after seeing the result
 
     const userContent: Anthropic.MessageParam["content"] = [];
 
