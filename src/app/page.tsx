@@ -92,7 +92,7 @@ function DemoRestaurante({ d }: { d: typeof DEMOS[0] }) {
         {/* Hero text */}
         <div style={{ position: "absolute", bottom: 20, left: 20, right: 20 }}>
           <div style={{ fontSize: 8, letterSpacing: ".15em", textTransform: "uppercase", color: d.primary, marginBottom: 6 }}>Abierto desde 1998</div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: "#fff", lineHeight: 1.1, marginBottom: 8 }}>{d.name}</div>
+          <div style={{ fontSize: 26, fontWeight: 700, color: "#fff", lineHeight: 1.05, marginBottom: 8, fontStyle: "italic", letterSpacing: "-.01em" }}>{d.name}</div>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,.6)" }}>{d.tagline}</div>
         </div>
       </div>
@@ -140,7 +140,7 @@ function DemoGimnasio({ d }: { d: typeof DEMOS[0] }) {
         {/* Hero text overlay */}
         <div style={{ position: "absolute", bottom: 20, left: 18, right: "40%" }}>
           <div style={{ fontSize: 8, letterSpacing: ".2em", color: d.primary, textTransform: "uppercase", marginBottom: 6, fontWeight: 700 }}>Barcelona · 24h</div>
-          <div style={{ fontSize: 28, fontWeight: 900, color: d.text, lineHeight: 1.05, letterSpacing: "-.02em", textTransform: "uppercase" }}>
+          <div style={{ fontSize: 32, fontWeight: 900, color: d.text, lineHeight: 1, letterSpacing: "-.01em", textTransform: "uppercase" }}>
             ENTRENA<br/>SIN LÍMITES
           </div>
         </div>
@@ -179,7 +179,7 @@ function DemoClinica({ d }: { d: typeof DEMOS[0] }) {
         <div style={{ display: "inline-flex", gap: 6, padding: "4px 12px", borderRadius: 100, background: `${d.primary}18`, border: `1px solid ${d.primary}35`, marginBottom: 12 }}>
           <span style={{ fontSize: 9, fontWeight: 600, color: d.primary, letterSpacing: ".05em" }}>✓ Clínica acreditada · Valencia</span>
         </div>
-        <div style={{ fontSize: 22, fontWeight: 700, color: d.text, lineHeight: 1.15, marginBottom: 8, letterSpacing: "-.01em" }}>
+        <div style={{ fontSize: 22, fontWeight: 700, color: d.text, lineHeight: 1.1, marginBottom: 8, letterSpacing: "-.02em" }}>
           Tu sonrisa perfecta<br/>empieza aquí
         </div>
         <div style={{ fontSize: 11, color: d.muted, maxWidth: 260, margin: "0 auto 16px" }}>{d.tagline}</div>
@@ -653,7 +653,6 @@ export default function HomePage() {
             <span style={{ fontWeight: 700, fontSize: 18, letterSpacing: "-.025em" }}>Landify</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <a href="/generate" className="btn-o hide-m" style={{ padding: "7px 14px", fontSize: 13 }}>Ya tengo una web →</a>
             <button onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); setTimeout(() => document.querySelector("textarea")?.focus(), 400); }} className="btn-w" style={{ padding: "9px 20px", fontSize: 14, borderRadius: 8 }}>
               Crea tu web ahora →
             </button>
@@ -671,12 +670,8 @@ export default function HomePage() {
           </span>
         </h1>
         <p className="fu d1" style={{ fontSize: 17, color: "var(--muted)", marginBottom: 44, lineHeight: 1.7, maxWidth: 520, marginLeft: "auto", marginRight: "auto" }}>
-          Genera gratis. Modifica con IA hasta que sea perfecta.{" "}<br/>
-          Paga{" "}
-          <span style={{ background: "linear-gradient(90deg,#E8C97A,#F0D99C,#C8A97E,#E8C97A)", backgroundSize: "300% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", animation: "shimmer 5s linear infinite" }}>
-            solo si publicas
-          </span>
-          {" "}— 29€ únicos.
+          Tu web profesional en segundos.<br/>
+          Sin tarjeta de crédito.
         </p>
 
         {/* ─ THE FORM ─ */}
@@ -748,14 +743,37 @@ export default function HomePage() {
         </h2>
         <p style={{ fontSize: 14, color: "var(--muted)", textAlign: "center", marginBottom: 36 }}>No hay dos landings iguales. La IA adapta estructura, tipografía y contenido al sector.</p>
 
-        {/* Selector pills */}
+        {/* Selector pills — each with its own typographic personality */}
         <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8, marginBottom: 24 }}>
-          {DEMOS.map((d, i) => (
-            <button key={d.id} onClick={() => setActiveDemo(i)} className="pill"
-              style={activeDemo === i ? { borderColor: d.primary, color: d.primary, background: `${d.primary}14` } : {}}>
-              {d.label}
-            </button>
-          ))}
+          {DEMOS.map((d, i) => {
+            const active = activeDemo === i;
+            const pillFonts: Record<string, { fontFamily: string; fontStyle?: string; fontWeight?: number; letterSpacing?: string; textTransform?: "uppercase" | "none" }> = {
+              restaurante: { fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic", fontWeight: 500, letterSpacing: ".01em" },
+              gimnasio: { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase" },
+              clinica: { fontFamily: "'Raleway', sans-serif", fontWeight: 600, letterSpacing: ".06em" },
+              fotografia: { fontFamily: "'Josefin Sans', sans-serif", fontWeight: 300, letterSpacing: ".18em", textTransform: "uppercase" },
+              abogados: { fontFamily: "'Playfair Display', Georgia, serif", fontStyle: "italic", fontWeight: 700 },
+              peluqueria: { fontFamily: "'Bodoni Moda', Georgia, serif", fontWeight: 400, letterSpacing: ".04em" },
+            };
+            const pf = pillFonts[d.id] ?? {};
+            return (
+              <button key={d.id} onClick={() => setActiveDemo(i)}
+                style={{
+                  padding: "7px 16px", borderRadius: 100, cursor: "pointer", border: "none",
+                  background: active ? d.primary : "rgba(255,255,255,.06)",
+                  color: active ? (d.bg.startsWith("#F") || d.bg.startsWith("#f") ? "#111" : "#fff") : "rgba(255,255,255,.55)",
+                  fontSize: 13,
+                  transition: "all .18s",
+                  fontFamily: pf.fontFamily,
+                  fontStyle: pf.fontStyle as "italic" | "normal" | undefined,
+                  fontWeight: pf.fontWeight,
+                  letterSpacing: pf.letterSpacing,
+                  textTransform: pf.textTransform,
+                }}>
+                {d.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Browser chrome + demo */}
@@ -771,7 +789,7 @@ export default function HomePage() {
           <DemoRenderer d={DEMOS[activeDemo]} />
           {/* CTA bar */}
           <div style={{ padding: "12px 20px", background: "rgba(255,255,255,.025)", borderTop: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
-            <span style={{ fontSize: 13, color: "var(--muted)" }}>¿Así de buena quieres tu web? <span style={{ color: "var(--fg)" }}>Pruébalo gratis.</span></span>
+            <span style={{ fontSize: 13, color: "var(--muted)" }}>Tu web profesional en segundos.</span>
             <button onClick={() => { setPrompt(""); document.querySelector("textarea")?.focus(); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="btn-w" style={{ padding: "7px 18px", fontSize: 13, borderRadius: 8 }}>
               Crear la mía gratis →
             </button>
@@ -867,7 +885,8 @@ export default function HomePage() {
       {/* ── FINAL CTA ── */}
       <section style={{ borderTop: "1px solid var(--border)", background: "radial-gradient(ellipse at 50% 100%, rgba(200,169,126,.07) 0%, transparent 60%)", padding: "80px 24px 100px", textAlign: "center" }}>
         <h2 className="serif" style={{ fontSize: "clamp(32px,6vw,64px)", fontStyle: "italic", fontWeight: 400, letterSpacing: "-.03em", marginBottom: 18, lineHeight: 1.06 }}>
-          Pruébalo ahora.<br/>Es gratis.
+          Pruébalo ahora.<br/>
+          <span style={{ background: "linear-gradient(90deg,#E8C97A,#F0D99C,#C8A97E,#E8C97A)", backgroundSize: "300% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", animation: "shimmer 5s linear infinite" }}>Es gratis.</span>
         </h2>
         <p style={{ fontSize: 15, color: "var(--muted)", maxWidth: 380, margin: "0 auto 32px", lineHeight: 1.7 }}>
           Describe tu negocio y en 30 segundos ves tu landing. Sin tarjeta de crédito.
