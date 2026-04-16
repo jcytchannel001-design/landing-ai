@@ -670,8 +670,8 @@ export default function HomePage() {
           </span>
         </h1>
         <p className="fu d1" style={{ fontSize: 17, color: "var(--muted)", marginBottom: 44, lineHeight: 1.7, maxWidth: 520, marginLeft: "auto", marginRight: "auto" }}>
-          Tu web profesional en segundos.<br/>
-          Sin tarjeta de crédito.
+          Tu web profesional en segundos.{" "}
+          <span style={{ background: "linear-gradient(90deg,#E8C97A,#F0D99C,#C8A97E,#E8C97A)", backgroundSize: "300% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", animation: "shimmer 5s linear infinite" }}>Pagas solo si te gusta.</span>
         </p>
 
         {/* ─ THE FORM ─ */}
