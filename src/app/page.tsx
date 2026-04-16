@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 // ─── Demo data — 6 completely different visual structures ─────────────────────
 const DEMOS = [
@@ -76,7 +76,7 @@ const DEMOS = [
 
 function DemoRestaurante({ d }: { d: typeof DEMOS[0] }) {
   return (
-    <div style={{ background: d.bg, fontFamily: "'Georgia', serif", overflow: "hidden" }}>
+    <div style={{ background: d.bg, fontFamily: "'Cormorant Garamond', Georgia, serif", overflow: "hidden" }}>
       {/* Full-bleed image hero with text overlay */}
       <div style={{ position: "relative", height: 220 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -126,7 +126,7 @@ function DemoRestaurante({ d }: { d: typeof DEMOS[0] }) {
 
 function DemoGimnasio({ d }: { d: typeof DEMOS[0] }) {
   return (
-    <div style={{ background: d.bg, fontFamily: "system-ui, sans-serif", overflow: "hidden" }}>
+    <div style={{ background: d.bg, fontFamily: "'Barlow Condensed', system-ui, sans-serif", overflow: "hidden" }}>
       {/* Full-bleed image hero with overlay */}
       <div style={{ position: "relative", height: 200 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -168,7 +168,7 @@ function DemoGimnasio({ d }: { d: typeof DEMOS[0] }) {
 
 function DemoClinica({ d }: { d: typeof DEMOS[0] }) {
   return (
-    <div style={{ background: d.bg, fontFamily: "system-ui, sans-serif", overflow: "hidden" }}>
+    <div style={{ background: d.bg, fontFamily: "'Raleway', system-ui, sans-serif", overflow: "hidden" }}>
       {/* Centered clean nav */}
       <div style={{ padding: "14px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `1px solid ${d.primary}20` }}>
         <span style={{ fontWeight: 700, fontSize: 13, color: d.text }}>{d.name}</span>
@@ -221,7 +221,7 @@ function DemoFotografia({ d }: { d: typeof DEMOS[0] }) {
     "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=300&q=70&fit=crop",
   ];
   return (
-    <div style={{ background: d.bg, fontFamily: "'Georgia', serif", overflow: "hidden" }}>
+    <div style={{ background: d.bg, fontFamily: "'Josefin Sans', system-ui, sans-serif", overflow: "hidden" }}>
       {/* Minimal top nav */}
       <div style={{ padding: "12px 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span style={{ fontWeight: 400, fontSize: 14, color: d.text, fontStyle: "italic", letterSpacing: ".05em" }}>{d.name}</span>
@@ -258,7 +258,7 @@ function DemoFotografia({ d }: { d: typeof DEMOS[0] }) {
 
 function DemoAbogados({ d }: { d: typeof DEMOS[0] }) {
   return (
-    <div style={{ background: d.bg, fontFamily: "'EB Garamond', 'Georgia', serif", overflow: "hidden" }}>
+    <div style={{ background: d.bg, fontFamily: "'Playfair Display', Georgia, serif", overflow: "hidden" }}>
       {/* Header with gold rule */}
       <div style={{ padding: "14px 24px", borderBottom: `1px solid ${d.primary}40`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
@@ -305,7 +305,7 @@ function DemoAbogados({ d }: { d: typeof DEMOS[0] }) {
 
 function DemoPeluqueria({ d }: { d: typeof DEMOS[0] }) {
   return (
-    <div style={{ background: d.bg, fontFamily: "'Cormorant Garamond', 'Georgia', serif", overflow: "hidden" }}>
+    <div style={{ background: d.bg, fontFamily: "'Bodoni Moda', Georgia, serif", overflow: "hidden" }}>
       {/* Magazine split: top image with diagonal overlay */}
       <div style={{ position: "relative", height: 180 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -356,52 +356,104 @@ const DEMO_RENDERERS = [DemoRestaurante, DemoGimnasio, DemoClinica, DemoFotograf
 
 // Color is auto-determined by the AI based on business type
 
+type AuthStep = "closed" | "choose" | "email-form" | "code";
+
 export default function HomePage() {
-  const [buyLoading, setBuyLoading] = useState(false);
   const [genLoading, setGenLoading] = useState(false);
   const [genStep, setGenStep] = useState(0);
   const [error, setError] = useState("");
   const [prompt, setPrompt] = useState("");
+  const [businessName, setBusinessName] = useState("");
   const [images, setImages] = useState<string[]>([]);
   const [activeDemo, setActiveDemo] = useState(0);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const handleBuy = async () => {
-    setBuyLoading(true);
-    setError("");
-    try {
-      const res = await fetch("/api/create-checkout", { method: "POST" });
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-      else throw new Error(data.error || "Error al crear el pago");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Error desconocido");
-      setBuyLoading(false);
-    }
-  };
+  // Auth modal
+  const [authStep, setAuthStep] = useState<AuthStep>("closed");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authCodeDigits, setAuthCodeDigits] = useState(["","","","","",""]);
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState("");
+  const codeRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const handleGenerate = async () => {
-    if (!prompt.trim()) { setError("Describe tu negocio primero"); return; }
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = authStep !== "closed" ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [authStep]);
+
+  const doGenerate = async () => {
+    setAuthStep("closed");
     setGenLoading(true);
     setError("");
     setGenStep(0);
     const steps = [400, 900, 1700, 2800];
     steps.forEach((ms, i) => setTimeout(() => setGenStep(i + 1), ms));
     try {
+      const fullPrompt = businessName.trim()
+        ? `Nombre del negocio: ${businessName.trim()}\n\n${prompt}`
+        : prompt;
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, images }),
+        body: JSON.stringify({ prompt: fullPrompt, images }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       localStorage.setItem(`site-config-${data.id}`, JSON.stringify(data.config));
       window.location.href = `/preview?id=${data.id}`;
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Error generando la landing");
+      setError(e instanceof Error ? e.message : "Error generando la web");
       setGenLoading(false);
     }
+  };
+
+  const handleGenerate = () => {
+    if (!prompt.trim()) { setError("Describe tu negocio primero"); return; }
+    setError("");
+    setAuthStep("choose");
+  };
+
+  const handleSocialAuth = () => {
+    // Social auth — proceed directly (real OAuth to be wired later)
+    doGenerate();
+  };
+
+  const handleEmailSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!authEmail.includes("@") || authPassword.length < 6) {
+      setAuthError("Introduce un email válido y contraseña de al menos 6 caracteres.");
+      return;
+    }
+    setAuthError("");
+    setAuthStep("code");
+    setAuthCodeDigits(["","","","","",""]);
+    setTimeout(() => codeRefs.current[0]?.focus(), 100);
+  };
+
+  const handleCodeChange = (val: string, idx: number) => {
+    const digit = val.replace(/\D/g, "").slice(-1);
+    const next = [...authCodeDigits];
+    next[idx] = digit;
+    setAuthCodeDigits(next);
+    if (digit && idx < 5) codeRefs.current[idx + 1]?.focus();
+  };
+
+  const handleCodeKeyDown = (e: React.KeyboardEvent, idx: number) => {
+    if (e.key === "Backspace" && !authCodeDigits[idx] && idx > 0) {
+      codeRefs.current[idx - 1]?.focus();
+    }
+  };
+
+  const handleCodeVerify = () => {
+    const code = authCodeDigits.join("");
+    if (code.length < 6) { setAuthError("Introduce el código de 6 dígitos."); return; }
+    // Accept any 6-digit code for the demo; wire real email verification here
+    setAuthError("");
+    setAuthLoading(true);
+    setTimeout(() => { setAuthLoading(false); doGenerate(); }, 600);
   };
 
   const handleImages = (files: FileList | null) => {
@@ -422,7 +474,7 @@ export default function HomePage() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,700;1,400&family=Bodoni+Moda:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=Josefin+Sans:wght@300;400;600&family=Raleway:wght@400;600;700&family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@400;500;600&display=swap');
         *{box-sizing:border-box}
         :root{--bg:#080808;--fg:#fff;--muted:rgba(255,255,255,.38);--border:rgba(255,255,255,.08);--subtle:rgba(255,255,255,.04)}
         body{background:var(--bg);color:var(--fg);font-family:var(--font-geist-sans),system-ui,sans-serif;-webkit-font-smoothing:antialiased}
@@ -451,6 +503,108 @@ export default function HomePage() {
         .gen-overlay{position:fixed;inset:0;z-index:200;background:rgba(8,8,8,.92);backdrop-filter:blur(12px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;animation:fadeIn .2s ease}
         @media(max-width:768px){.hide-m{display:none!important}.grid2{grid-template-columns:1fr!important}.grid3{grid-template-columns:1fr!important}}
       `}</style>
+
+      {/* ── AUTH MODAL ── */}
+      {authStep !== "closed" && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, background: "rgba(0,0,0,.75)", backdropFilter: "blur(8px)", animation: "fadeIn .15s ease" }}>
+          <div style={{ width: "100%", maxWidth: 420, background: "#111", border: "1px solid rgba(255,255,255,.1)", borderRadius: 20, padding: "36px 32px", boxShadow: "0 32px 80px rgba(0,0,0,.6)", animation: "fadeUp .2s cubic-bezier(.16,1,.3,1)" }}>
+
+            {/* Header */}
+            <div style={{ textAlign: "center", marginBottom: 28 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 16 }}>
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <rect x="1" y="1" width="7" height="7" rx="1.5" fill="white" opacity=".9"/>
+                  <rect x="10" y="1" width="7" height="7" rx="1.5" fill="white" opacity=".35"/>
+                  <rect x="1" y="10" width="7" height="7" rx="1.5" fill="white" opacity=".35"/>
+                  <rect x="10" y="10" width="7" height="7" rx="1.5" fill="white" opacity=".65"/>
+                </svg>
+                <span style={{ fontWeight: 700, fontSize: 16, letterSpacing: "-.02em" }}>Landify</span>
+              </div>
+              {authStep === "choose" && <>
+                <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 6 }}>Crea tu cuenta gratis</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,.4)" }}>Para guardar y publicar tu web</div>
+              </>}
+              {authStep === "email-form" && <>
+                <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 6 }}>Crea tu cuenta</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,.4)" }}>Con email y contraseña</div>
+              </>}
+              {authStep === "code" && <>
+                <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 6 }}>Verifica tu email</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,.4)" }}>Hemos enviado un código a <strong style={{ color: "rgba(255,255,255,.7)" }}>{authEmail}</strong></div>
+              </>}
+            </div>
+
+            {/* Step: choose provider */}
+            {authStep === "choose" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <button onClick={handleSocialAuth} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "13px 18px", borderRadius: 10, background: "#fff", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, color: "#111", fontFamily: "inherit" }}>
+                  <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/><path d="M3.964 10.706A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.038l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+                  Continuar con Google
+                </button>
+                <button onClick={handleSocialAuth} style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", padding: "13px 18px", borderRadius: 10, background: "#1877F2", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, color: "#fff", fontFamily: "inherit" }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                  Continuar con Facebook
+                </button>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "4px 0" }}>
+                  <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,.08)" }}/>
+                  <span style={{ fontSize: 12, color: "rgba(255,255,255,.3)" }}>o con email</span>
+                  <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,.08)" }}/>
+                </div>
+                <button onClick={() => { setAuthError(""); setAuthStep("email-form"); }} style={{ width: "100%", padding: "13px 18px", borderRadius: 10, background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.1)", cursor: "pointer", fontSize: 14, fontWeight: 500, color: "rgba(255,255,255,.7)", fontFamily: "inherit" }}>
+                  Continuar con email
+                </button>
+              </div>
+            )}
+
+            {/* Step: email + password form */}
+            {authStep === "email-form" && (
+              <form onSubmit={handleEmailSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,.4)", letterSpacing: ".04em", textTransform: "uppercase", display: "block", marginBottom: 6 }}>Email</label>
+                  <input type="email" value={authEmail} onChange={e => setAuthEmail(e.target.value)} placeholder="tu@email.com" required style={{ width: "100%", padding: "12px 14px", borderRadius: 9, background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.1)", color: "#fff", fontSize: 14, fontFamily: "inherit", outline: "none" }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,.4)", letterSpacing: ".04em", textTransform: "uppercase", display: "block", marginBottom: 6 }}>Contraseña</label>
+                  <input type="password" value={authPassword} onChange={e => setAuthPassword(e.target.value)} placeholder="Mínimo 6 caracteres" required style={{ width: "100%", padding: "12px 14px", borderRadius: 9, background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.1)", color: "#fff", fontSize: 14, fontFamily: "inherit", outline: "none" }} />
+                </div>
+                {authError && <p style={{ fontSize: 12, color: "#f87171", margin: 0 }}>{authError}</p>}
+                <button type="submit" style={{ marginTop: 4, padding: "13px", borderRadius: 10, background: "#fff", color: "#111", fontWeight: 700, fontSize: 15, border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                  Crear cuenta →
+                </button>
+                <button type="button" onClick={() => setAuthStep("choose")} style={{ background: "none", border: "none", color: "rgba(255,255,255,.3)", fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>← Volver</button>
+              </form>
+            )}
+
+            {/* Step: 6-digit code */}
+            {authStep === "code" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 20, alignItems: "center" }}>
+                <div style={{ display: "flex", gap: 8 }}>
+                  {authCodeDigits.map((d, i) => (
+                    <input
+                      key={i}
+                      ref={el => { codeRefs.current[i] = el; }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={d}
+                      onChange={e => handleCodeChange(e.target.value, i)}
+                      onKeyDown={e => handleCodeKeyDown(e, i)}
+                      style={{ width: 44, height: 52, textAlign: "center", fontSize: 22, fontWeight: 700, borderRadius: 9, background: "rgba(255,255,255,.06)", border: d ? "1px solid rgba(255,255,255,.4)" : "1px solid rgba(255,255,255,.12)", color: "#fff", outline: "none", fontFamily: "inherit" }}
+                    />
+                  ))}
+                </div>
+                {authError && <p style={{ fontSize: 12, color: "#f87171", margin: 0, textAlign: "center" }}>{authError}</p>}
+                <button onClick={handleCodeVerify} disabled={authLoading} style={{ width: "100%", padding: "13px", borderRadius: 10, background: "linear-gradient(135deg,#E8C97A,#C8A97E)", color: "#111", fontWeight: 700, fontSize: 15, border: "none", cursor: "pointer", fontFamily: "inherit", opacity: authLoading ? 0.6 : 1 }}>
+                  {authLoading ? "Verificando…" : "Verificar y generar mi web →"}
+                </button>
+                <button onClick={() => setAuthStep("email-form")} style={{ background: "none", border: "none", color: "rgba(255,255,255,.3)", fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>← Cambiar email</button>
+              </div>
+            )}
+
+            <button onClick={() => setAuthStep("closed")} style={{ position: "absolute", top: 16, right: 16, background: "none", border: "none", color: "rgba(255,255,255,.25)", cursor: "pointer", fontSize: 20, lineHeight: 1, padding: 4 }}>×</button>
+          </div>
+        </div>
+      )}
 
       {/* ── GENERATING OVERLAY ── */}
       {genLoading && (
@@ -489,19 +643,19 @@ export default function HomePage() {
       {/* ── NAV ── */}
       <nav style={{ position: "sticky", top: 0, zIndex: 50, borderBottom: "1px solid var(--border)", background: "rgba(8,8,8,.88)", backdropFilter: "blur(16px)" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px", height: 58, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-            <svg width="17" height="17" viewBox="0 0 18 18" fill="none">
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <svg width="22" height="22" viewBox="0 0 18 18" fill="none">
               <rect x="1" y="1" width="7" height="7" rx="1.5" fill="white" opacity=".9"/>
               <rect x="10" y="1" width="7" height="7" rx="1.5" fill="white" opacity=".35"/>
               <rect x="1" y="10" width="7" height="7" rx="1.5" fill="white" opacity=".35"/>
               <rect x="10" y="10" width="7" height="7" rx="1.5" fill="white" opacity=".65"/>
             </svg>
-            <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: "-.02em" }}>Landify</span>
+            <span style={{ fontWeight: 700, fontSize: 18, letterSpacing: "-.025em" }}>Landify</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <a href="/generate" className="btn-o hide-m" style={{ padding: "7px 14px", fontSize: 13 }}>Ya generé una landing →</a>
-            <button onClick={handleBuy} disabled={buyLoading} className="btn-w" style={{ padding: "8px 18px", fontSize: 13, borderRadius: 8 }}>
-              {buyLoading ? "Redirigiendo…" : "Comprar acceso — 29€"}
+            <a href="/generate" className="btn-o hide-m" style={{ padding: "7px 14px", fontSize: 13 }}>Ya tengo una web →</a>
+            <button onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); setTimeout(() => document.querySelector("textarea")?.focus(), 400); }} className="btn-w" style={{ padding: "9px 20px", fontSize: 14, borderRadius: 8 }}>
+              Crea tu web ahora →
             </button>
           </div>
         </div>
@@ -510,7 +664,7 @@ export default function HomePage() {
       {/* ── HERO + FORM ── */}
       <section style={{ maxWidth: 800, margin: "0 auto", padding: "80px 24px 64px", textAlign: "center" }}>
         <h1 className="fu" style={{ fontSize: "clamp(42px,8vw,88px)", fontWeight: 700, lineHeight: 1.05, letterSpacing: "-.04em", marginBottom: 20 }}>
-          La landing page<br/>
+          La web profesional<br/>
           de tu negocio,{" "}
           <span className="serif" style={{ fontStyle: "italic", fontWeight: 400, letterSpacing: "-.01em", background: "linear-gradient(90deg,#E8C97A,#F0D99C,#C8A97E,#E8C97A)", backgroundSize: "300% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", animation: "shimmer 5s linear infinite" }}>
             en segundos
@@ -526,7 +680,21 @@ export default function HomePage() {
         </p>
 
         {/* ─ THE FORM ─ */}
-        <div className="fu d2" style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.14)", borderRadius: 18, overflow: "hidden", textAlign: "left", boxShadow: "0 0 0 1px rgba(255,255,255,.04), 0 24px 64px rgba(0,0,0,.4)" }}>
+        {/* Business name mini-input */}
+        <div className="fu d2" style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.12)", borderRadius: 12, marginBottom: 10, overflow: "hidden", display: "flex", alignItems: "center", gap: 0 }}>
+          <span style={{ padding: "0 16px", fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,.28)", letterSpacing: ".06em", textTransform: "uppercase", whiteSpace: "nowrap", flexShrink: 0 }}>Nombre del negocio</span>
+          <div style={{ width: 1, height: 28, background: "rgba(255,255,255,.08)", flexShrink: 0 }} />
+          <input
+            type="text"
+            value={businessName}
+            onChange={e => setBusinessName(e.target.value.slice(0, 60))}
+            placeholder="Ej: La Taberna del Puerto, FitLife Studio…"
+            style={{ flex: 1, background: "transparent", border: "none", outline: "none", fontSize: 14, color: "#fff", fontFamily: "inherit", padding: "12px 16px" }}
+          />
+        </div>
+
+        {/* Description textarea box */}
+        <div style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.14)", borderRadius: 18, overflow: "hidden", textAlign: "left", boxShadow: "0 0 0 1px rgba(255,255,255,.04), 0 24px 64px rgba(0,0,0,.4)" }}>
           {/* Label bar */}
           <div style={{ padding: "14px 20px 0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,.3)", letterSpacing: ".04em", textTransform: "uppercase" }}>Describe tu negocio</span>
@@ -536,6 +704,7 @@ export default function HomePage() {
           <textarea
             value={prompt}
             onChange={e => setPrompt(e.target.value.slice(0, 600))}
+            onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey && prompt.trim()) { e.preventDefault(); handleGenerate(); } }}
             placeholder="Ej: Somos una clínica dental en Valencia especializada en ortodoncia invisible. Atendemos familias y adultos que buscan resultados rápidos y discretos..."
             rows={5}
             style={{ width: "100%", background: "transparent", border: "none", outline: "none", resize: "none", fontSize: 16, color: "#fff", lineHeight: 1.7, fontFamily: "inherit", padding: "12px 20px 16px" }}
@@ -560,7 +729,7 @@ export default function HomePage() {
             </div>
             {/* Generate */}
             <button onClick={handleGenerate} disabled={genLoading || !prompt.trim()} className="btn-w" style={{ borderRadius: 9, padding: "10px 22px", fontSize: 14 }}>
-              {genLoading ? "Generando…" : "Generar mi landing →"}
+              {genLoading ? "Generando…" : "Crear mi web →"}
             </button>
           </div>
           {error && <div style={{ padding: "0 20px 14px", color: "#f87171", fontSize: 13 }}>{error}</div>}
@@ -658,10 +827,10 @@ export default function HomePage() {
                 </li>
               ))}
             </ul>
-            <button onClick={handleBuy} disabled={buyLoading} className="btn-w" style={{ width: "100%", justifyContent: "center", padding: "14px", borderRadius: 10 }}>
-              {buyLoading ? "Redirigiendo…" : "Comprar acceso — 29€"}
+            <button onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); setTimeout(() => document.querySelector("textarea")?.focus(), 400); }} className="btn-w" style={{ width: "100%", justifyContent: "center", padding: "14px", borderRadius: 10 }}>
+              Crea tu web ahora →
             </button>
-            <p style={{ fontSize: 11, color: "rgba(255,255,255,.18)", textAlign: "center", marginTop: 12 }}>Stripe · Sin suscripción · Factura disponible</p>
+            <p style={{ fontSize: 11, color: "rgba(255,255,255,.18)", textAlign: "center", marginTop: 12 }}>Generación gratuita · Paga solo si publicas</p>
           </div>
         </div>
       </section>
