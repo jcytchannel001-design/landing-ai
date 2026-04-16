@@ -517,7 +517,12 @@ export default function HomePage() {
           </span>
         </h1>
         <p className="fu d1" style={{ fontSize: 17, color: "var(--muted)", marginBottom: 44, lineHeight: 1.7, maxWidth: 520, marginLeft: "auto", marginRight: "auto" }}>
-          Descríbenos tu negocio. Generamos la landing gratis.<br/>Págala solo si te convence — 29€ pago único.
+          Genera gratis. Modifica con IA hasta que sea perfecta.{" "}<br/>
+          Paga{" "}
+          <span style={{ background: "linear-gradient(90deg,#E8C97A,#F0D99C,#C8A97E,#E8C97A)", backgroundSize: "300% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", animation: "shimmer 5s linear infinite" }}>
+            solo si publicas
+          </span>
+          {" "}— 29€ únicos.
         </p>
 
         {/* ─ THE FORM ─ */}
@@ -562,7 +567,7 @@ export default function HomePage() {
         </div>
 
         <p className="fu d3" style={{ fontSize: 12, color: "rgba(255,255,255,.18)", marginTop: 16 }}>
-          Sin tarjeta · Generación gratuita · Pagas solo si te gusta
+          Sin tarjeta · Edición ilimitada con IA · Paga solo si publicas
         </p>
       </section>
 
@@ -613,7 +618,7 @@ export default function HomePage() {
           {[
             { n: "01", title: "Describe tu negocio", desc: "Escribe 2-3 frases sobre lo que haces. Añade fotos si quieres. Sin formularios complicados." },
             { n: "02", title: "Ves el resultado al instante", desc: "En 30 segundos tienes una landing completa: textos, servicios, galería y contacto adaptados a tu sector." },
-            { n: "03", title: "Págala solo si te convence", desc: "Revisa la web. Edita lo que quieras. Si te gusta, paga 29€ y es tuya para siempre." },
+            { n: "03", title: "Paga solo si publicas", desc: "Modifica con el chat de IA hasta que esté perfecta. Paga 29€ únicamente cuando quieras publicarla." },
           ].map((s, i) => (
             <div key={s.n} style={{ padding: "32px 30px", border: "1px solid var(--border)", borderRadius: i === 0 ? "12px 0 0 12px" : i === 2 ? "0 12px 12px 0" : undefined, background: "var(--subtle)" }}>
               <div className="serif" style={{ fontSize: 52, fontStyle: "italic", color: "rgba(255,255,255,.05)", lineHeight: 1, marginBottom: 18, letterSpacing: "-.04em" }}>{s.n}</div>
@@ -631,7 +636,7 @@ export default function HomePage() {
             <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--muted)", marginBottom: 12 }}>Precio</p>
             <h2 style={{ fontSize: "clamp(26px,4vw,40px)", fontWeight: 700, letterSpacing: "-.03em", marginBottom: 16 }}>
               Genera gratis.<br/>
-              <span className="serif" style={{ fontStyle: "italic", color: "var(--muted)", fontWeight: 400 }}>Paga si te gusta.</span>
+              <span className="serif" style={{ fontStyle: "italic", fontWeight: 400, background: "linear-gradient(90deg,#E8C97A,#F0D99C,#C8A97E,#E8C97A)", backgroundSize: "300% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", animation: "shimmer 5s linear infinite" }}>Paga solo si publicas.</span>
             </h2>
             <p style={{ fontSize: 15, lineHeight: 1.75, color: "var(--muted)", maxWidth: 340 }}>
               No hay suscripciones. No hay riesgo. Generates tu landing, la ves, la personalizas, y solo pagas si te convence.
