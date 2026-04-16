@@ -98,8 +98,14 @@ export interface NavbarConfig {
   primaryColor: string;
 }
 
+export interface SiteFont {
+  heading: string;  // Google Font family name for headings (e.g. "Playfair Display")
+  body: string;     // Google Font family name for body text (e.g. "Lato")
+}
+
 export interface SiteConfig {
   id?: string;
+  font?: SiteFont;
   brand: {
     name: string;
     tagline: string;

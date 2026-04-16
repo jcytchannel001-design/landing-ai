@@ -155,6 +155,11 @@ function css(c: SiteConfig) {
   return { "--primary": c.brand.primaryColor, "--bg": c.brand.bgColor, "--dark": c.brand.darkColor } as React.CSSProperties;
 }
 
+function buildGoogleFontsUrl(heading: string, body: string): string {
+  const enc = (s: string) => s.trim().replace(/ /g, "+");
+  return `https://fonts.googleapis.com/css2?family=${enc(heading)}:ital,wght@0,400;0,600;0,700;0,900;1,400&family=${enc(body)}:wght@400;500;600&display=swap`;
+}
+
 function CountUp({ end, suffix, duration = 2000 }: { end: number; suffix: string; duration?: number }) {
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
@@ -848,8 +853,16 @@ export default function TemplateSite({
   topOffset = 0,
 }: TemplateSiteProps) {
   const ep: EP = { editMode, onUpdate };
+  const tid = `lt-${config.id ?? "preview"}`;
   return (
-    <div style={css(config)}>
+    <div id={tid} style={css(config)}>
+      {config.font && (
+        <style>{`
+          @import url('${buildGoogleFontsUrl(config.font.heading, config.font.body)}');
+          #${tid} { font-family: '${config.font.body}', system-ui, sans-serif; }
+          #${tid} h1, #${tid} h2, #${tid} h3, #${tid} h4 { font-family: '${config.font.heading}', serif; }
+        `}</style>
+      )}
       <Navbar c={config} topOffset={topOffset} {...ep} />
       <Hero c={config} {...ep} />
       <Stats c={config} {...ep} />

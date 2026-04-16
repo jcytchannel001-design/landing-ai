@@ -509,10 +509,10 @@ export default function HomePage() {
 
       {/* ── HERO + FORM ── */}
       <section style={{ maxWidth: 800, margin: "0 auto", padding: "80px 24px 64px", textAlign: "center" }}>
-        <h1 className="fu" style={{ fontSize: "clamp(42px,8vw,88px)", fontWeight: 700, lineHeight: 1.03, letterSpacing: "-.04em", marginBottom: 20 }}>
+        <h1 className="fu" style={{ fontSize: "clamp(42px,8vw,88px)", fontWeight: 700, lineHeight: 1.05, letterSpacing: "-.04em", marginBottom: 20 }}>
           La landing page<br/>
           de tu negocio,{" "}
-          <span style={{ background: "linear-gradient(90deg,#E8C97A,#F0D99C,#C8A97E,#E8C97A)", backgroundSize: "300% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", animation: "shimmer 5s linear infinite" }}>
+          <span className="serif" style={{ fontStyle: "italic", fontWeight: 400, letterSpacing: "-.01em" }}>
             en segundos
           </span>
         </h1>
