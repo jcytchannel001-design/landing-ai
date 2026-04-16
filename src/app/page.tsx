@@ -512,7 +512,7 @@ export default function HomePage() {
         <h1 className="fu" style={{ fontSize: "clamp(42px,8vw,88px)", fontWeight: 700, lineHeight: 1.05, letterSpacing: "-.04em", marginBottom: 20 }}>
           La landing page<br/>
           de tu negocio,{" "}
-          <span className="serif" style={{ fontStyle: "italic", fontWeight: 400, letterSpacing: "-.01em" }}>
+          <span className="serif" style={{ fontStyle: "italic", fontWeight: 400, letterSpacing: "-.01em", background: "linear-gradient(90deg,#E8C97A,#F0D99C,#C8A97E,#E8C97A)", backgroundSize: "300% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", animation: "shimmer 5s linear infinite" }}>
             en segundos
           </span>
         </h1>
