@@ -6,6 +6,44 @@ import type { SiteConfig } from "@/lib/siteTypes";
 
 const client = new Anthropic();
 
+/**
+ * Attempts to repair truncated or malformed JSON by closing
+ * unclosed strings, arrays and objects.
+ */
+function repairJson(raw: string): string {
+  let s = raw.trim();
+
+  // Remove trailing comma before closing bracket/brace
+  s = s.replace(/,\s*([}\]])/g, "$1");
+
+  // Walk through and track open structures
+  const stack: string[] = [];
+  let inString = false;
+  let escape = false;
+
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    if (escape) { escape = false; continue; }
+    if (ch === "\\") { escape = true; continue; }
+    if (ch === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+    if (ch === "{") stack.push("}");
+    else if (ch === "[") stack.push("]");
+    else if (ch === "}" || ch === "]") stack.pop();
+  }
+
+  // Close unclosed string
+  if (inString) s += '"';
+
+  // Close unclosed structures in reverse order
+  while (stack.length) s += stack.pop()!;
+
+  return s;
+}
+
 const SYSTEM_PROMPT = `You are an expert web designer and copywriter who creates website configurations for ANY type of business.
 
 Given a business description, generate a JSON configuration for a professional landing page.
@@ -206,8 +244,8 @@ export async function POST(req: NextRequest) {
 
     const message = await client.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 6000,
-      thinking: { type: "adaptive" },
+      max_tokens: 16000,
+      // No thinking — not needed for JSON generation and consumes output tokens
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: userContent }],
     });
@@ -218,11 +256,24 @@ export async function POST(req: NextRequest) {
       throw new Error("No text response from Claude");
     }
 
-    // Clean up in case Claude wrapped in markdown
+    // Clean up markdown fences
     let jsonText = textBlock.text.trim();
     jsonText = jsonText.replace(/^```json\n?/i, "").replace(/\n?```$/i, "").trim();
+    // Extract outermost JSON object in case there's extra text
+    const firstBrace = jsonText.indexOf("{");
+    const lastBrace = jsonText.lastIndexOf("}");
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+      jsonText = jsonText.slice(firstBrace, lastBrace + 1);
+    }
 
-    const config: SiteConfig = JSON.parse(jsonText);
+    let config: SiteConfig;
+    try {
+      config = JSON.parse(jsonText);
+    } catch (parseErr) {
+      // Attempt to repair common truncation issues
+      const repaired = repairJson(jsonText);
+      config = JSON.parse(repaired);
+    }
     const id = randomUUID();
     config.id = id;
 

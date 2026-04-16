@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import TemplateSite from "@/components/template/TemplateSite";
 import EditorBar from "@/components/editor/EditorBar";
 import BrandPanel from "@/components/editor/BrandPanel";
+import AiChat from "@/components/editor/AiChat";
 import { loadConfig, persistConfig, updatePath } from "@/lib/configHelpers";
 import type { SiteConfig } from "@/lib/siteTypes";
 
@@ -45,6 +46,13 @@ function EditorInner() {
       return updated;
     });
     // Flash saved indicator
+    setSavedFlash(true);
+    setTimeout(() => setSavedFlash(false), 1500);
+  }, [id]);
+
+  const handleAiUpdate = useCallback((updated: SiteConfig) => {
+    setConfig(updated);
+    persistConfig(id, updated);
     setSavedFlash(true);
     setTimeout(() => setSavedFlash(false), 1500);
   }, [id]);
@@ -138,8 +146,8 @@ function EditorInner() {
       {/* Auto-saved flash */}
       {savedFlash && (
         <div
-          className="fixed bottom-6 right-6 z-[999] flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold"
-          style={{ background: "#F0FDF4", color: "#16A34A", border: "1px solid #86EFAC" }}
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold"
+          style={{ background: "#F0FDF4", color: "#16A34A", border: "1px solid #86EFAC", boxShadow: "0 2px 12px rgba(0,0,0,.1)" }}
         >
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
             <path d="M2 6l3 3 5-5" stroke="#16A34A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -147,6 +155,9 @@ function EditorInner() {
           Guardado
         </div>
       )}
+
+      {/* AI Chat assistant */}
+      <AiChat config={config} onUpdate={handleAiUpdate} />
     </div>
   );
 }

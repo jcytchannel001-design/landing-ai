@@ -126,37 +126,40 @@ function DemoRestaurante({ d }: { d: typeof DEMOS[0] }) {
 
 function DemoGimnasio({ d }: { d: typeof DEMOS[0] }) {
   return (
-    <div style={{ background: d.bg, fontFamily: "'Impact', 'Arial Black', sans-serif", overflow: "hidden" }}>
-      {/* Split: left metrics, right image */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", height: 220 }}>
-        <div style={{ padding: "20px 18px", display: "flex", flexDirection: "column", justifyContent: "space-between", borderRight: `2px solid ${d.primary}` }}>
-          <div>
-            <div style={{ fontSize: 9, letterSpacing: ".2em", color: d.primary, textTransform: "uppercase", fontFamily: "system-ui" }}>FitLife Studio</div>
-            <div style={{ fontSize: 36, fontWeight: 900, color: d.text, lineHeight: .9, marginTop: 8, letterSpacing: "-1px" }}>ENTRENA<br/>SIN<br/>LÍMITES</div>
-          </div>
-          <div style={{ padding: "8px 14px", background: d.primary, fontSize: 11, fontWeight: 700, color: "#060606", display: "inline-block", letterSpacing: ".05em" }}>
-            ÚNETE AHORA
-          </div>
+    <div style={{ background: d.bg, fontFamily: "system-ui, sans-serif", overflow: "hidden" }}>
+      {/* Full-bleed image hero with overlay */}
+      <div style={{ position: "relative", height: 200 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={d.img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", filter: "brightness(.45) contrast(1.1)" }} />
+        <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to right, ${d.bg} 0%, ${d.bg}90 30%, transparent 70%)` }} />
+        {/* Nav */}
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontWeight: 900, fontSize: 13, color: d.text, letterSpacing: ".06em", textTransform: "uppercase" }}>{d.name}</span>
+          <div style={{ padding: "5px 12px", background: d.primary, fontSize: 9, fontWeight: 800, color: "#060606", borderRadius: 4, letterSpacing: ".05em" }}>ÚNETE</div>
         </div>
-        <div style={{ position: "relative" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={d.img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", filter: "contrast(1.1) brightness(.8)" }} />
-          <div style={{ position: "absolute", inset: 0, background: `linear-gradient(135deg, ${d.bg}80 0%, transparent 50%)` }} />
+        {/* Hero text overlay */}
+        <div style={{ position: "absolute", bottom: 20, left: 18, right: "40%" }}>
+          <div style={{ fontSize: 8, letterSpacing: ".2em", color: d.primary, textTransform: "uppercase", marginBottom: 6, fontWeight: 700 }}>Barcelona · 24h</div>
+          <div style={{ fontSize: 28, fontWeight: 900, color: d.text, lineHeight: 1.05, letterSpacing: "-.02em", textTransform: "uppercase" }}>
+            ENTRENA<br/>SIN LÍMITES
+          </div>
         </div>
       </div>
       {/* Metric strip */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", borderTop: `2px solid ${d.primary}` }}>
-        {[{v:"+500",l:"MIEMBROS"},{v:"24H",l:"ACCESO"},{v:"20+",l:"CLASES/SEM"}].map(m => (
-          <div key={m.l} style={{ padding: "10px 0", textAlign: "center", borderRight: `1px solid ${d.primary}30` }}>
-            <div style={{ fontSize: 20, fontWeight: 900, color: d.primary, letterSpacing: "-1px" }}>{m.v}</div>
-            <div style={{ fontSize: 7, letterSpacing: ".15em", color: d.muted, fontFamily: "system-ui", marginTop: 2 }}>{m.l}</div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", borderTop: `2px solid ${d.primary}`, background: d.bg }}>
+        {[{v:"+500",l:"Miembros"},{v:"24h",l:"Acceso libre"},{v:"20+",l:"Clases/semana"}].map((m, i) => (
+          <div key={m.l} style={{ padding: "12px 0", textAlign: "center", borderRight: i < 2 ? `1px solid rgba(255,255,255,.08)` : "none" }}>
+            <div style={{ fontSize: 22, fontWeight: 800, color: d.primary, letterSpacing: "-.02em" }}>{m.v}</div>
+            <div style={{ fontSize: 9, color: d.muted, marginTop: 2, fontWeight: 500 }}>{m.l}</div>
           </div>
         ))}
       </div>
-      {/* Services */}
-      <div style={{ padding: "12px 18px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-        {["Entrenamiento personal","Clases grupales","Sala de pesas","Nutrición deportiva"].map(s => (
-          <div key={s} style={{ padding: "8px 10px", border: `1px solid ${d.primary}30`, fontSize: 9, color: d.muted, fontFamily: "system-ui", letterSpacing: ".05em", textTransform: "uppercase" }}>{s}</div>
+      {/* Services grid */}
+      <div style={{ padding: "12px 16px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5 }}>
+        {["Entrenamiento personal","Clases grupales","Box & CrossFit","Nutrición deportiva"].map(s => (
+          <div key={s} style={{ padding: "9px 12px", border: `1px solid ${d.primary}28`, borderRadius: 6, fontSize: 10, color: d.muted, fontWeight: 500, background: `${d.primary}06` }}>
+            <span style={{ color: d.primary, marginRight: 5 }}>▸</span>{s}
+          </div>
         ))}
       </div>
     </div>
@@ -351,7 +354,7 @@ const DEMO_RENDERERS = [DemoRestaurante, DemoGimnasio, DemoClinica, DemoFotograf
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-const SWATCHES = ["#C15B3A","#2563EB","#16A34A","#7C3AED","#DB2777","#EA580C","#0891B2","#334155","#9D174D","#065F46"];
+// Color is auto-determined by the AI based on business type
 
 export default function HomePage() {
   const [buyLoading, setBuyLoading] = useState(false);
@@ -359,7 +362,6 @@ export default function HomePage() {
   const [genStep, setGenStep] = useState(0);
   const [error, setError] = useState("");
   const [prompt, setPrompt] = useState("");
-  const [color, setColor] = useState("#C15B3A");
   const [images, setImages] = useState<string[]>([]);
   const [activeDemo, setActiveDemo] = useState(0);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -390,7 +392,7 @@ export default function HomePage() {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, images, primaryColor: color }),
+        body: JSON.stringify({ prompt, images }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -506,71 +508,61 @@ export default function HomePage() {
       </nav>
 
       {/* ── HERO + FORM ── */}
-      <section style={{ maxWidth: 760, margin: "0 auto", padding: "72px 24px 64px", textAlign: "center" }}>
-        <h1 className="fu serif" style={{ fontSize: "clamp(38px,7vw,72px)", fontStyle: "italic", fontWeight: 400, lineHeight: 1.08, letterSpacing: "-.03em", marginBottom: 16 }}>
-          La web de tu negocio,{" "}
+      <section style={{ maxWidth: 800, margin: "0 auto", padding: "80px 24px 64px", textAlign: "center" }}>
+        <h1 className="fu" style={{ fontSize: "clamp(42px,8vw,88px)", fontWeight: 700, lineHeight: 1.03, letterSpacing: "-.04em", marginBottom: 20 }}>
+          La landing page<br/>
+          de tu negocio,{" "}
           <span style={{ background: "linear-gradient(90deg,#E8C97A,#F0D99C,#C8A97E,#E8C97A)", backgroundSize: "300% auto", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", animation: "shimmer 5s linear infinite" }}>
-            en segundos.
+            en segundos
           </span>
         </h1>
-        <p className="fu d1" style={{ fontSize: 16, color: "var(--muted)", marginBottom: 36, lineHeight: 1.7 }}>
-          Descríbenos tu negocio. Generamos la landing gratis. Págala solo si te convence.
+        <p className="fu d1" style={{ fontSize: 17, color: "var(--muted)", marginBottom: 44, lineHeight: 1.7, maxWidth: 520, marginLeft: "auto", marginRight: "auto" }}>
+          Descríbenos tu negocio. Generamos la landing gratis.<br/>Págala solo si te convence — 29€ pago único.
         </p>
 
         {/* ─ THE FORM ─ */}
-        <div className="fu d2" style={{ background: "rgba(255,255,255,.035)", border: "1px solid var(--border)", borderRadius: 16, padding: "24px", textAlign: "left" }}>
+        <div className="fu d2" style={{ background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.14)", borderRadius: 18, overflow: "hidden", textAlign: "left", boxShadow: "0 0 0 1px rgba(255,255,255,.04), 0 24px 64px rgba(0,0,0,.4)" }}>
+          {/* Label bar */}
+          <div style={{ padding: "14px 20px 0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,.3)", letterSpacing: ".04em", textTransform: "uppercase" }}>Describe tu negocio</span>
+            <span style={{ fontSize: 11, color: "rgba(255,255,255,.18)" }}>{prompt.length}/600</span>
+          </div>
           {/* Textarea */}
           <textarea
             value={prompt}
-            onChange={e => setPrompt(e.target.value)}
-            placeholder="Ej: Somos una clínica dental en Valencia especializada en ortodoncia invisible y estética dental. Atendemos familias y adultos de 25-55 años que buscan resultados rápidos y discretos."
-            rows={4}
-            style={{ width: "100%", background: "transparent", border: "none", outline: "none", resize: "none", fontSize: 15, color: "#fff", lineHeight: 1.7, fontFamily: "inherit" }}
+            onChange={e => setPrompt(e.target.value.slice(0, 600))}
+            placeholder="Ej: Somos una clínica dental en Valencia especializada en ortodoncia invisible. Atendemos familias y adultos que buscan resultados rápidos y discretos..."
+            rows={5}
+            style={{ width: "100%", background: "transparent", border: "none", outline: "none", resize: "none", fontSize: 16, color: "#fff", lineHeight: 1.7, fontFamily: "inherit", padding: "12px 20px 16px" }}
           />
-
-          <div style={{ height: 1, background: "var(--border)", margin: "16px 0" }} />
-
-          {/* Bottom controls row */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-              {/* Color swatches */}
-              <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
-                {SWATCHES.map(c => (
-                  <button key={c} className={`swatch${color === c ? " sel" : ""}`} style={{ background: c }} onClick={() => setColor(c)} title={c} />
-                ))}
-                <label style={{ cursor: "pointer" }}>
-                  <div style={{ width: 26, height: 26, borderRadius: "50%", border: "2px dashed rgba(255,255,255,.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <span style={{ fontSize: 14, color: "var(--muted)", lineHeight: 1 }}>+</span>
-                  </div>
-                  <input type="color" value={color} onChange={e => setColor(e.target.value)} style={{ display: "none" }} />
-                </label>
-              </div>
-
+          {/* Divider */}
+          <div style={{ height: 1, background: "rgba(255,255,255,.08)" }} />
+          {/* Bottom controls */}
+          <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               {/* Image upload */}
               <button
                 onClick={() => fileRef.current?.click()}
-                style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "transparent", color: "var(--muted)", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 13px", borderRadius: 8, border: "1px solid rgba(255,255,255,.1)", background: "rgba(255,255,255,.04)", color: "rgba(255,255,255,.5)", fontSize: 13, cursor: "pointer", fontFamily: "inherit", transition: "all .15s" }}
               >
                 <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
-                {images.length > 0 ? `${images.length} foto${images.length > 1 ? "s" : ""}` : "Añadir fotos"}
+                {images.length > 0 ? `${images.length} foto${images.length > 1 ? "s" : ""} adjunta${images.length > 1 ? "s" : ""}` : "Adjuntar fotos"}
               </button>
               <input ref={fileRef} type="file" accept="image/*" multiple style={{ display: "none" }} onChange={e => handleImages(e.target.files)} />
               {images.length > 0 && (
-                <button onClick={() => setImages([])} style={{ fontSize: 11, color: "var(--muted)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>Quitar</button>
+                <button onClick={() => setImages([])} style={{ fontSize: 12, color: "rgba(255,255,255,.3)", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>× Quitar</button>
               )}
             </div>
-
-            {/* Generate button */}
-            <button onClick={handleGenerate} disabled={genLoading || !prompt.trim()} className="btn-w" style={{ borderRadius: 9 }}>
+            {/* Generate */}
+            <button onClick={handleGenerate} disabled={genLoading || !prompt.trim()} className="btn-w" style={{ borderRadius: 9, padding: "10px 22px", fontSize: 14 }}>
               {genLoading ? "Generando…" : "Generar mi landing →"}
             </button>
           </div>
-
-          {error && <p style={{ color: "#f87171", fontSize: 12, marginTop: 12 }}>{error}</p>}
+          {error && <div style={{ padding: "0 20px 14px", color: "#f87171", fontSize: 13 }}>{error}</div>}
         </div>
 
-        <p className="fu d3" style={{ fontSize: 12, color: "rgba(255,255,255,.18)", marginTop: 14 }}>
-          Generación gratuita · Pagas solo si te gusta · 29€ pago único
+        <p className="fu d3" style={{ fontSize: 12, color: "rgba(255,255,255,.18)", marginTop: 16 }}>
+          Sin tarjeta · Generación gratuita · Pagas solo si te gusta
         </p>
       </section>
 
